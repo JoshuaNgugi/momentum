@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1088720884242",
+    "project_id": "momentum-c905c",
+    "storage_bucket": "momentum-c905c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1088720884242:android:80be81e630b4bcde53becb",
+        "android_client_info": {
+          "package_name": "com.example.momentum"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEMbo0x1GPHnZgQfxDW9u0y0LFuboA-1A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
