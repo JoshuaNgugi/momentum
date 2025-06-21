@@ -97,6 +97,6 @@ This project is licensed under the MIT License - see the [LICENSE](https://www.g
 
 ### Developed with ❤️ by Joshua Ngugi
 
-[My LinkedIn Profile](https://www.google.com/search?q=https://www.linkedin.com/in/joshua-ngugi/) | [My GitHub Profile](https://www.google.com/search?q=https://github.com/JoshuaNgugi/)
+[My LinkedIn Profile](https://www.linkedin.com/in/joshua-ngugi/) | [My GitHub Profile](https://github.com/JoshuaNgugi/)
 
 -----
