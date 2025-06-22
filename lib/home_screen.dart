@@ -1,12 +1,15 @@
-// screens/home_screen.dart
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import 'package:momentum/auth_service.dart';
+
+var logger = Logger(printer: PrettyPrinter());
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _selectedMedia = media;
       });
     } catch (e) {
-      print('Error picking media: $e');
+      logger.e('Error picking media: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to pick media')));
@@ -75,28 +78,63 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     setState(() {
-      _isUploading = true; // Set loading state
+      _isUploading = true;
     });
 
     try {
-      // 1. Upload to Firebase Storage
+      String mediaType = _isMediaTypeVideo(_selectedMedia) ? 'video' : 'image';
       String fileName =
           '${DateTime.now().millisecondsSinceEpoch}_${_selectedMedia!.name}';
       // Store in a user-specific folder for better organization and security rules
       String storagePath = 'user_uploads/${user.uid}/$fileName';
       Reference storageRef = FirebaseStorage.instance.ref().child(storagePath);
 
-      // Upload the file
-      UploadTask uploadTask = storageRef.putFile(File(_selectedMedia!.path));
+      UploadTask uploadTask;
+
+      if (mediaType == 'image') {
+        final filePath = _selectedMedia!.path;
+        final targetPath = '${filePath}_compressed.jpg';
+
+        final originalFile = File(_selectedMedia!.path);
+        final originalFileSize = await originalFile
+            .length(); // Get size in bytes
+        logger.i(
+          'Original image file size: ${originalFileSize / (1024 * 1024)} MB',
+        );
+
+        var result = await FlutterImageCompress.compressAndGetFile(
+          filePath,
+          targetPath,
+          minWidth: 1080,
+          minHeight: 1080,
+          quality: 75,
+        );
+
+        if (result == null) {
+          throw Exception('Image compression failed.');
+        }
+
+        final compressedFileSize = await File(result.path).length();
+        logger.i(
+          'Compressed image file size: ${compressedFileSize / (1024 * 1024)} MB',
+        );
+        logger.i(
+          'Compression Ratio: ${(compressedFileSize / originalFileSize * 100).toStringAsFixed(2)}%',
+        );
+
+        // Upload the compressed file
+        uploadTask = storageRef.putFile(File(result.path));
+      } else {
+        // For video, we'll just upload the original file for now.
+        // Video compression/transcoding is typically done server-side (Cloud Functions).
+        uploadTask = storageRef.putFile(File(_selectedMedia!.path));
+      }
 
       // Await the completion of the upload task
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      // Determine media type for Firestore
-      String mediaType = _isMediaTypeVideo(_selectedMedia) ? 'video' : 'image';
-
-      // 2. Save metadata to Firestore
+      // Save metadata to Firestore
       await FirebaseFirestore.instance.collection('posts').add({
         'userId': user.uid,
         'mediaUrl': downloadUrl,
@@ -116,12 +154,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _selectedMedia = null;
       });
     } on FirebaseException catch (e) {
-      print('Firebase Upload Error: ${e.message}');
+      logger.e('Firebase Upload Error: ${e.message}');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Upload failed: ${e.message}')));
     } catch (e) {
-      print('General Upload Error: $e');
+      logger.e('General Upload Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('An unexpected error occurred during upload: $e'),
@@ -129,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } finally {
       setState(() {
-        _isUploading = false; // Reset loading state
+        _isUploading = false;
       });
     }
   }
