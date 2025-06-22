@@ -8,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:momentum/auth_service.dart';
+import 'package:momentum/post_card.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 
@@ -90,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Reference storageRef = FirebaseStorage.instance.ref().child(storagePath);
 
       UploadTask uploadTask;
+      String currentStatus = 'ready'; // Default status for images
 
       if (mediaType == 'image') {
         final filePath = _selectedMedia!.path;
@@ -128,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // For video, we'll just upload the original file for now.
         // Video compression/transcoding is typically done server-side (Cloud Functions).
         uploadTask = storageRef.putFile(File(_selectedMedia!.path));
+        currentStatus = 'processing';
       }
 
       // Await the completion of the upload task
@@ -143,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'mediaType': mediaType,
         'timestamp':
             FieldValue.serverTimestamp(), // Firestore server timestamp for consistency
+        'status': currentStatus,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -315,6 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     String mediaUrl = data['mediaUrl'] ?? '';
                     String mediaType = data['mediaType'] ?? 'image';
                     Timestamp? timestamp = data['timestamp'];
+                    String status = data['status'] ?? 'ready';
 
                     // Format timestamp if available
                     String formattedTime = timestamp != null
@@ -323,83 +328,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ).toLocal().toString().split('.')[0]
                         : 'Unknown time';
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (mediaType == 'image')
-                              Center(
-                                child: Image.network(
-                                  mediaUrl,
-                                  height: 250,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
-                                          ),
-                                        );
-                                      },
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                        Icons.broken_image,
-                                        size: 100,
-                                        color: Colors.red,
-                                      ),
-                                ),
-                              )
-                            else if (mediaType == 'video')
-                              Center(
-                                child: Container(
-                                  height: 250,
-                                  width: double.infinity,
-                                  color: Colors.grey[300],
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.videocam,
-                                        size: 80,
-                                        color: Colors.grey,
-                                      ),
-                                      Text(
-                                        'Video content (player coming soon!)',
-                                        style: TextStyle(color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Uploaded: $formattedTime',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return PostCard(
+                      mediaUrl: mediaUrl,
+                      mediaType: mediaType,
+                      userName:
+                          FirebaseAuth.instance.currentUser?.email?.split(
+                            '@',
+                          )[0] ??
+                          'You',
+                      status: status,
                     );
                   },
                 );

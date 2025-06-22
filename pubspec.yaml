@@ -41,6 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_image_compress: ^2.4.0
   logger: ^2.5.0
+  video_player: ^2.10.0
 
 dev_dependencies:
   flutter_test:
