@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:momentum/home_screen.dart';
 import 'package:momentum/login_screen.dart';
+
+var logger = Logger();
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/splash';
@@ -33,11 +36,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (user != null) {
       // User is logged in, navigate to Home Screen
+      logger.i("User is logged in. Navigating to HomeScreen");
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
       // User is not logged in, navigate to Login Screen
+      logger.i("User is not logged in. Navigating to LoginScreen");
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
