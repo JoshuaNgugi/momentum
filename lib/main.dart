@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:logger/logger.dart';
 import 'package:momentum/home_screen.dart';
 import 'package:momentum/login_screen.dart';
 import 'package:momentum/signup_screen.dart';
+import 'package:momentum/splash_screen.dart';
 import 'firebase_options.dart';
+
+var logger = Logger();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,9 +16,9 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('Successfully init firebase');
+    logger.i('Successfully init firebase');
   } catch (e) {
-    print('Error init Firebase: $e');
+    logger.e('Error init Firebase: $e');
   }
   runApp(const MyApp());
 }
@@ -31,6 +35,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      initialRoute: SplashScreen.routeName,
       // Use a StreamBuilder to listen to authentication state changes
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
@@ -53,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
         '/signup': (context) => const SignupScreen(),
+        SplashScreen.routeName: (ctx) => SplashScreen(),
       },
     );
   }
