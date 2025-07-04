@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isObscured = true;
 
   Future<void> _login() async {
     setState(() {
@@ -71,11 +72,21 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isObscured ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isObscured = !_isObscured;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: _isObscured,
             ),
             if (_errorMessage != null)
               Padding(

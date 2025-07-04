@@ -17,6 +17,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isPasswordObscured = true;
+  bool _isConfirmPasswordObscured = true;
 
   Future<void> _signup() async {
     setState(() {
@@ -82,20 +84,40 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 16.0),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordObscured ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordObscured = !_isPasswordObscured;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: _isPasswordObscured,
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: _confirmPasswordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Confirm Password',
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isConfirmPasswordObscured ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isConfirmPasswordObscured = !_isConfirmPasswordObscured;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: _isConfirmPasswordObscured,
             ),
             if (_errorMessage != null)
               Padding(
