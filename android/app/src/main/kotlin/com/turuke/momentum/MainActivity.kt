@@ -1,4 +1,4 @@
-package com.example.momentum
+package com.turuke.momentum
 
 import io.flutter.embedding.android.FlutterActivity
 

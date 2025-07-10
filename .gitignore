@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/assets/images/play_console
 
 # Symbolication related
 app.*.symbols
